@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router'
 import { AnimatePresence } from 'framer-motion'
-import { Spinner } from '@heroui/spinner'
+import { Spinner } from '@heroui/react'
 import SettingsPage from '@/pages/Settings'
 
 const Layout = lazy(() => import('@/components/layouts/Layout'))
