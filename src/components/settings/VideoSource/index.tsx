@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CircleX, CircleCheckBig, ChevronRight, Home } from 'lucide-react'
+import { CircleX, CircleCheckBig, ChevronRight, Home, RectangleHorizontal, RectangleVertical } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/utils'
 import { useRef, useState, useEffect } from 'react'
@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import type { PosterAspectRatio } from '@/config/settings.config'
 
 export default function VideoSource() {
   const {
@@ -184,6 +185,40 @@ export default function VideoSource() {
                   ))}
               </SelectContent>
             </Select>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl bg-white/40 p-4 shadow-lg shadow-black/5 backdrop-blur-xl dark:bg-gray-900/80">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg dark:from-red-600 dark:to-red-500">
+                <RectangleVertical size={20} className="text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-gray-800 dark:text-white">海报图片比例</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400">设置首页视频列表的海报显示比例</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={home.posterAspectRatio === '3/4' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setHomeSettings({ posterAspectRatio: '3/4' as PosterAspectRatio })}
+                className="flex-1 gap-2 rounded-xl sm:flex-none dark:bg-gray-800 dark:text-gray-100"
+              >
+                <RectangleVertical size={16} />
+                <span>3:4 竖版</span>
+              </Button>
+              <Button
+                variant={home.posterAspectRatio === '16/9' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setHomeSettings({ posterAspectRatio: '16/9' as PosterAspectRatio })}
+                className="flex-1 gap-2 rounded-xl sm:flex-none dark:bg-gray-800 dark:text-gray-100"
+              >
+                <RectangleHorizontal size={16} />
+                <span>16:9 横版</span>
+              </Button>
+            </div>
           </div>
         </div>
 

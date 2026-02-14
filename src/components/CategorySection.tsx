@@ -4,6 +4,7 @@ import { Button, Input } from '@heroui/react'
 import { useNavigate } from 'react-router'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import type { VideoApi, VideoItem } from '@/types'
+import { useSettingStore } from '@/store/settingStore'
 
 interface CategorySectionProps {
   category: {
@@ -29,15 +30,15 @@ function getOptimalColumns(count: number): string {
   
   const getResponsiveCols = (cols: number): string => {
     const colsMap: Record<number, string> = {
-      2: 'grid-cols-2',
-      3: 'grid-cols-3',
-      4: 'grid-cols-4',
-      5: 'grid-cols-5',
-      6: 'grid-cols-6',
-      7: 'grid-cols-7',
-      8: 'grid-cols-8',
+      2: 'grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2',
+      3: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3',
+      4: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4',
+      5: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5',
+      6: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
+      7: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7',
+      8: 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8',
     }
-    return colsMap[cols] || `grid-cols-${cols}`
+    return colsMap[cols] || `grid-cols-2 sm:grid-cols-3 md:grid-cols-${cols}`
   }
 
   const preferredCols = [4, 5, 6, 3, 2]
@@ -59,6 +60,7 @@ function getOptimalColumns(count: number): string {
 
 export default function CategorySection({ category, api }: CategorySectionProps) {
   const navigate = useNavigate()
+  const { home } = useSettingStore()
   const [videos, setVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(() => {
@@ -69,6 +71,10 @@ export default function CategorySection({ category, api }: CategorySectionProps)
   const [jumpPage, setJumpPage] = useState('')
 
   const gridCols = useMemo(() => getOptimalColumns(videos.length), [videos.length])
+  
+  const aspectRatioClass = useMemo(() => {
+    return home.posterAspectRatio === '16/9' ? 'aspect-video' : 'aspect-[3/4]'
+  }, [home.posterAspectRatio])
 
   const handleVideoClick = (video: VideoItem) => {
     navigate(`/detail/${video.source_code}/${video.vod_id}`)
@@ -246,9 +252,9 @@ export default function CategorySection({ category, api }: CategorySectionProps)
 
   if (loading) {
     return (
-      <div className="grid grid-cols-4 gap-3 md:grid-cols-5 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="aspect-[3/4] animate-pulse rounded-2xl bg-white/20 backdrop-blur-xl" />
+          <div key={i} className={`${aspectRatioClass} animate-pulse rounded-2xl bg-white/20 backdrop-blur-xl`} />
         ))}
       </div>
     )
@@ -272,7 +278,7 @@ export default function CategorySection({ category, api }: CategorySectionProps)
             className="group cursor-pointer overflow-hidden rounded-2xl bg-white/40 shadow-lg shadow-black/5 backdrop-blur-xl transition-all duration-300 hover:shadow-xl hover:shadow-black/10 dark:bg-white/10"
             onClick={() => handleVideoClick(video)}
           >
-            <div className="relative aspect-[3/4] overflow-hidden">
+            <div className={`relative ${aspectRatioClass} overflow-hidden`}>
               <img
                 src={video.vod_pic || 'https://via.placeholder.com/300x400?text=暂无封面'}
                 alt={video.vod_name}
