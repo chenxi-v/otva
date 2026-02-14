@@ -36,7 +36,24 @@ export function useCloudSync() {
       }
 
       if (cloudData.videoApis && cloudData.videoApis.length > 0) {
-        setApis(cloudData.videoApis)
+        const localApis = useApiStore.getState().videoAPIs
+        const localApiIds = new Set(localApis.map(api => api.id))
+        const mergedApis = [...localApis]
+        
+        for (const cloudApi of cloudData.videoApis) {
+          if (!localApiIds.has(cloudApi.id)) {
+            mergedApis.push(cloudApi)
+          } else {
+            const localIndex = mergedApis.findIndex(api => api.id === cloudApi.id)
+            const localUpdated = localIndex >= 0 ? new Date(mergedApis[localIndex].updatedAt).getTime() : 0
+            const cloudUpdated = new Date(cloudApi.updatedAt).getTime()
+            if (cloudUpdated > localUpdated) {
+              mergedApis[localIndex] = cloudApi
+            }
+          }
+        }
+        
+        setApis(mergedApis)
       }
 
       if (!hasShownSuccessToast.current && !sessionStorage.getItem(SESSION_KEY)) {
