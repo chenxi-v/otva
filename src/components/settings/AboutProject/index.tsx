@@ -1,5 +1,5 @@
 import { OkiLogo } from '@/components/icons'
-import { Github, History } from 'lucide-react'
+import { Github, History, Database, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useVersionStore } from '@/store/versionStore'
 
 import { Switch } from '@/components/ui/switch'
@@ -7,9 +7,11 @@ import { Label } from '@/components/ui/label'
 import { useSettingStore } from '@/store/settingStore'
 import ActionDropdown from '@/components/common/ActionDropdown'
 import { usePersonalConfig } from '@/hooks/usePersonalConfig'
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { URLConfigModal, TextConfigModal } from './ImportConfigModal'
 import { ConfirmModal } from '@/components/common/ConfirmModal'
+import { dbService, type HealthStatus } from '@/services/db.service'
+import { Button } from '@/components/ui/button'
 
 export default function AboutProject() {
   const currentYear = new Date().getFullYear()
@@ -31,6 +33,30 @@ export default function AboutProject() {
   const [urlConfigModalOpen, setUrlConfigModalOpen] = useState(false)
   const [textConfigModalOpen, setTextConfigModalOpen] = useState(false)
   const [confirmRestoreOpen, setConfirmRestoreOpen] = useState(false)
+
+  const [healthStatus, setHealthStatus] = useState<HealthStatus | null>(null)
+  const [isChecking, setIsChecking] = useState(false)
+
+  const checkDatabaseHealth = useCallback(async () => {
+    setIsChecking(true)
+    try {
+      const status = await dbService.checkHealth()
+      setHealthStatus(status)
+    } catch {
+      setHealthStatus({
+        status: 'unhealthy',
+        latency: 0,
+        timestamp: new Date().toISOString(),
+        error: 'Failed to check database health',
+      })
+    } finally {
+      setIsChecking(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    checkDatabaseHealth()
+  }, [checkDatabaseHealth])
 
   return (
     <div className="flex flex-col gap-6 px-4 md:px-8">
@@ -132,6 +158,93 @@ export default function AboutProject() {
         confirmText="确认恢复"
         isDestructive={true}
       />
+
+      {/* Database Status Section */}
+      <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white/40 p-6 backdrop-blur-xl dark:border-gray-700 dark:bg-gray-800/40">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/30">
+              <Database className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-gray-700 dark:text-gray-200">数据库状态</h2>
+              <p className="text-xs text-gray-500">Upstash Redis 连接监控</p>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={checkDatabaseHealth}
+            disabled={isChecking}
+            className="h-8 px-3"
+          >
+            <RefreshCw className={`h-4 w-4 ${isChecking ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Status */}
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50/50 p-3 dark:bg-gray-700/30">
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                healthStatus?.status === 'healthy'
+                  ? 'bg-green-100 dark:bg-green-900/30'
+                  : 'bg-red-100 dark:bg-red-900/30'
+              }`}
+            >
+              {healthStatus?.status === 'healthy' ? (
+                <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+              ) : (
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              )}
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">状态</p>
+              <p
+                className={`text-sm font-medium ${
+                  healthStatus?.status === 'healthy'
+                    ? 'text-green-600 dark:text-green-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}
+              >
+                {healthStatus?.status === 'healthy' ? '正常' : '异常'}
+              </p>
+            </div>
+          </div>
+
+          {/* Latency */}
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50/50 p-3 dark:bg-gray-700/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+              <Clock className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">延迟</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {healthStatus ? `${healthStatus.latency}ms` : '-'}
+              </p>
+            </div>
+          </div>
+
+          {/* Last Check */}
+          <div className="flex items-center gap-3 rounded-lg bg-gray-50/50 p-3 dark:bg-gray-700/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-900/30">
+              <History className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">最后检查</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                {healthStatus ? new Date(healthStatus.timestamp).toLocaleTimeString() : '-'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {healthStatus?.error && (
+          <div className="rounded-lg bg-red-50/50 p-3 dark:bg-red-900/20">
+            <p className="text-sm text-red-600 dark:text-red-400">{healthStatus.error}</p>
+          </div>
+        )}
+      </div>
 
       {/* Description Section */}
       <div className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white/40 p-6 text-center backdrop-blur-xl hover:shadow-sm md:text-left dark:border-gray-700 dark:bg-gray-800/40">

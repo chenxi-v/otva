@@ -28,6 +28,13 @@ interface UserData {
   videoApis: VideoApi[]
 }
 
+interface HealthStatus {
+  status: 'healthy' | 'unhealthy'
+  latency: number
+  timestamp: string
+  error?: string
+}
+
 class DbService {
   private baseUrl = '/api/db'
   private userId: string
@@ -127,7 +134,20 @@ class DbService {
       body: JSON.stringify({ apiId }),
     })
   }
+
+  async checkHealth(): Promise<HealthStatus> {
+    try {
+      return await this.request<HealthStatus>('health')
+    } catch {
+      return {
+        status: 'unhealthy',
+        latency: 0,
+        timestamp: new Date().toISOString(),
+        error: 'Failed to connect to database API',
+      }
+    }
+  }
 }
 
 export const dbService = new DbService()
-export type { UserSettings, UserData }
+export type { UserSettings, UserData, HealthStatus }
