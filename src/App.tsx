@@ -10,6 +10,7 @@ import { useApiStore } from '@/store/apiStore'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import RecentHistory from '@/components/RecentHistory'
+import MobileNavBar from '@/components/MobileNavBar'
 import CategorySection from '@/components/CategorySection'
 import XmlCategorySection, { XML_CATEGORIES } from '@/components/XmlCategorySection'
 import { useNavigate } from 'react-router'
@@ -374,7 +375,9 @@ function App() {
         transition={{ duration: 0.3 }}
         className="min-h-screen pb-20"
       >
-        <motion.div layoutId="history-icon" className="fixed top-5 right-5 z-50 flex gap-3">
+        <MobileNavBar />
+
+        <div className="fixed top-5 right-5 z-50 hidden gap-3 sm:flex">
           <Button
             isIconOnly
             className="bg-white/40 shadow-xl shadow-black/5 backdrop-blur-xl transition-all duration-300 hover:bg-white/60 dark:bg-white/10 dark:hover:bg-white/20"
@@ -406,13 +409,13 @@ function App() {
           >
             <Settings size={22} className="text-gray-700 dark:text-gray-200" />
           </Button>
-        </motion.div>
+        </div>
 
-        <div className="container mx-auto max-w-7xl px-4 pt-20">
+        <div className="container mx-auto max-w-7xl px-4 pt-18 sm:pt-20">
           <motion.div
             layoutId="app-logo"
             transition={{ duration: 0.4 }}
-            className="flex translate-x-[-1rem] items-end gap-2 text-[1.5rem] md:text-[2rem]"
+            className="hidden translate-x-[-1rem] items-end gap-2 text-[1.5rem] sm:flex md:text-[2rem]"
           >
             <motion.div layoutId="logo-icon">
               <div className="block md:hidden">

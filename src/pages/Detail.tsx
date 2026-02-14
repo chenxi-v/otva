@@ -7,6 +7,7 @@ import { useSettingStore } from '@/store/settingStore'
 import { Button, Spinner, Tooltip, Select, SelectItem } from '@heroui/react'
 import { useDocumentTitle, useTheme } from '@/hooks'
 import { ArrowUpIcon, ArrowDownIcon } from '@/components/icons'
+import MobileNavBar from '@/components/MobileNavBar'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Sun, Moon, Monitor } from 'lucide-react'
 import { type ThemeMode } from '@/config/settings.config'
@@ -208,9 +209,10 @@ export default function Detail() {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl overflow-x-hidden p-2 pb-20 sm:p-4 md:pt-8">
-      {/* 主题切换按钮 - 固定在右上角 */}
-      <div className="fixed top-5 right-5 z-50">
+    <div className="container mx-auto max-w-6xl overflow-x-hidden p-2 pb-20 pt-18 sm:p-4 sm:pt-4 md:pt-8">
+      <MobileNavBar showSettings={false} />
+
+      <div className="fixed top-5 right-5 z-50 hidden gap-3 sm:flex">
         <Button
           onPress={() => {
             const modes: ThemeMode[] = ['light', 'dark', 'system']

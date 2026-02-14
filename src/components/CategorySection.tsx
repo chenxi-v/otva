@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button, Input } from '@heroui/react'
 import { useNavigate } from 'react-router'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Play, X } from 'lucide-react'
 import type { VideoApi, VideoItem } from '@/types'
 import { useSettingStore } from '@/store/settingStore'
 
@@ -69,6 +69,7 @@ export default function CategorySection({ category, api }: CategorySectionProps)
   })
   const [pageCount, setPageCount] = useState(1)
   const [jumpPage, setJumpPage] = useState('')
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null)
 
   const gridCols = useMemo(() => getOptimalColumns(videos.length), [videos.length])
   
@@ -77,7 +78,17 @@ export default function CategorySection({ category, api }: CategorySectionProps)
   }, [home.posterAspectRatio])
 
   const handleVideoClick = (video: VideoItem) => {
+    const isMobile = window.innerWidth < 640
+    if (isMobile) {
+      setSelectedVideo(video)
+    } else {
+      navigate(`/detail/${video.source_code}/${video.vod_id}`)
+    }
+  }
+
+  const handlePlayClick = (video: VideoItem) => {
     navigate(`/detail/${video.source_code}/${video.vod_id}`)
+    setSelectedVideo(null)
   }
 
   const handlePrevPage = () => {
@@ -313,34 +324,120 @@ export default function CategorySection({ category, api }: CategorySectionProps)
               </div>
             </div>
             <div className="p-2 sm:hidden">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <h4 className="line-clamp-1 text-sm font-bold leading-tight text-gray-800 dark:text-white">
-                    {video.vod_name}
-                  </h4>
-                  <div className="mt-1 flex items-center gap-2">
-                    {video.vod_year && (
-                      <span className="rounded bg-gray-200/80 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        {video.vod_year}
-                      </span>
-                    )}
-                    {video.type_name && (
-                      <span className="rounded bg-gray-200/80 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                        {video.type_name}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {video.vod_remarks && (
-                  <span className="shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-0.5 text-xs font-medium text-white shadow-lg">
-                    {video.vod_remarks}
-                  </span>
-                )}
-              </div>
+              <h4 className="line-clamp-1 text-sm font-bold leading-tight text-gray-800 dark:text-white">
+                {video.vod_name}
+              </h4>
             </div>
           </motion.div>
         ))}
       </div>
+
+      <AnimatePresence>
+        {selectedVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:hidden"
+            onClick={() => setSelectedVideo(null)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-3xl bg-white dark:bg-gray-900"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative aspect-video w-full flex-shrink-0">
+                <img
+                  src={selectedVideo.vod_pic || 'https://via.placeholder.com/300x400?text=暂无封面'}
+                  alt={selectedVideo.vod_name}
+                  className="h-full w-full object-cover"
+                  onError={e => {
+                    ;(e.target as HTMLImageElement).src =
+                      'https://via.placeholder.com/300x400?text=暂无封面'
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent dark:from-gray-900" />
+                <button
+                  onClick={() => setSelectedVideo(null)}
+                  className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm"
+                >
+                  <X size={18} className="text-white" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 pb-4">
+                <div className="-mt-8 relative z-10">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {selectedVideo.vod_name}
+                  </h3>
+                  
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {selectedVideo.vod_remarks && (
+                      <span className="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-3 py-1 text-xs font-medium text-white">
+                        {selectedVideo.vod_remarks}
+                      </span>
+                    )}
+                    {selectedVideo.vod_year && (
+                      <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        {selectedVideo.vod_year}
+                      </span>
+                    )}
+                    {selectedVideo.type_name && (
+                      <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        {selectedVideo.type_name}
+                      </span>
+                    )}
+                    {selectedVideo.vod_area && (
+                      <span className="rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                        {selectedVideo.vod_area}
+                      </span>
+                    )}
+                  </div>
+
+                  {(selectedVideo.vod_director || selectedVideo.vod_actor) && (
+                    <div className="mt-4 space-y-2">
+                      {selectedVideo.vod_director && (
+                        <div className="flex gap-2">
+                          <span className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400">导演</span>
+                          <span className="text-xs text-gray-700 dark:text-gray-300">{selectedVideo.vod_director}</span>
+                        </div>
+                      )}
+                      {selectedVideo.vod_actor && (
+                        <div className="flex gap-2">
+                          <span className="shrink-0 text-xs font-medium text-gray-500 dark:text-gray-400">演员</span>
+                          <span className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2">{selectedVideo.vod_actor}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedVideo.vod_content && (
+                    <div className="mt-4">
+                      <h4 className="mb-2 text-sm font-medium text-gray-900 dark:text-white">简介</h4>
+                      <p className="text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+                        {selectedVideo.vod_content.replace(/<[^>]*>/g, '')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex-shrink-0 border-t border-gray-200 p-4 dark:border-gray-700">
+                <Button
+                  onClick={() => handlePlayClick(selectedVideo)}
+                  className="w-full gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-purple-500 py-3 text-base font-medium text-white shadow-lg"
+                >
+                  <Play size={20} />
+                  立即播放
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {pageCount > 1 && (
         <motion.div

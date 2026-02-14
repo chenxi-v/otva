@@ -9,6 +9,7 @@ import SearchSettings from '@/components/settings/SearchSettings'
 import PlaybackSettings from '@/components/settings/PlaybackSettings'
 import ThemeSettings from '@/components/settings/ThemeSettings'
 import AboutProject from '@/components/settings/AboutProject'
+import MobileNavBar from '@/components/MobileNavBar'
 import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -71,9 +72,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl min-h-[90vh] p-2 pb-20 sm:p-4 md:pt-6">
-      {/* 主题切换按钮 - 固定在右上角 */}
-      <div className="fixed top-5 right-5 z-50">
+    <div className="container mx-auto max-w-6xl min-h-[90vh] p-2 pb-20 pt-18 sm:p-4 sm:pt-4 md:pt-6">
+      <MobileNavBar showSettings={false} />
+
+      <div className="fixed top-5 right-5 z-50 hidden gap-3 sm:flex">
         <Button
           onClick={() => {
             const modes: ThemeMode[] = ['light', 'dark', 'system']

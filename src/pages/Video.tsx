@@ -18,6 +18,7 @@ import { useViewingHistoryStore } from '@/store/viewingHistoryStore'
 import { useSettingStore } from '@/store/settingStore'
 import { useDocumentTitle, useTheme } from '@/hooks'
 import { ArrowUpIcon, ArrowDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons'
+import MobileNavBar from '@/components/MobileNavBar'
 import _ from 'lodash'
 import { toast } from 'sonner'
 import { Sun, Moon, Monitor } from 'lucide-react'
@@ -545,9 +546,10 @@ export default function Video() {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-2 sm:p-4">
-      {/* 主题切换按钮 - 固定在右上角 */}
-      <div className="fixed top-5 right-5 z-50">
+    <div className="container mx-auto max-w-7xl p-2 pb-20 pt-18 sm:p-4 sm:pt-4">
+      <MobileNavBar showSettings={false} />
+
+      <div className="fixed top-5 right-5 z-50 hidden gap-3 sm:flex">
         <Button
           onPress={() => {
             const modes: ThemeMode[] = ['light', 'dark', 'system']
@@ -568,15 +570,20 @@ export default function Video() {
         </Button>
       </div>
 
-      {/* 顶部信息栏 */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-0.5 text-xs font-medium text-white sm:px-3 sm:py-1">
+      {/* 顶部信息栏 - 手机端两行布局 */}
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center justify-between sm:flex-1 sm:justify-start sm:gap-3">
+          <div className="flex flex-1 items-center gap-2 min-w-0">
+            <span className="shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-0.5 text-xs font-medium text-white sm:px-3 sm:py-1">
               {sourceName}
             </span>
+            <h4 className="truncate text-base font-bold text-gray-900 dark:text-white sm:text-lg md:text-xl">{getTitle()}</h4>
           </div>
-          <h4 className="text-base font-bold text-gray-900 dark:text-white sm:text-lg md:text-xl">{getTitle()}</h4>
+          <Button size="sm" variant="flat" onPress={() => navigate(-1)} className="shrink-0 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 sm:hidden">
+            返回
+          </Button>
+        </div>
+        <div className="flex items-center justify-between sm:gap-2">
           <div className="hidden items-center gap-2 sm:flex">
             <Chip
               size="sm"
@@ -586,10 +593,10 @@ export default function Video() {
             </Chip>
             <span className="text-sm text-gray-500 dark:text-gray-400">共 {detail.episodes.length} 集</span>
           </div>
+          <Button size="sm" variant="flat" onPress={() => navigate(-1)} className="hidden bg-gray-100 dark:bg-gray-700 dark:text-gray-200 sm:flex">
+            返回
+          </Button>
         </div>
-        <Button size="sm" variant="flat" onPress={() => navigate(-1)} className="bg-gray-100 dark:bg-gray-700 dark:text-gray-200">
-          返回
-        </Button>
       </div>
 
       {/* 主内容区域 - 左右分栏布局 */}
