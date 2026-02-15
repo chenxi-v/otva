@@ -88,6 +88,10 @@ export default function CategorySection({ category, api }: CategorySectionProps)
   const [jumpPage, setJumpPage] = useState('')
 
   const gridCols = useMemo(() => getOptimalColumns(videos.length, home.posterAspectRatio), [videos.length, home.posterAspectRatio])
+
+  const gridGap = useMemo(() => {
+    return 'gap-5 sm:gap-3'
+  }, [])
   
   const aspectRatioClass = useMemo(() => {
     return home.posterAspectRatio === '16/9' ? 'aspect-video' : 'aspect-[3/4]'
@@ -269,8 +273,8 @@ export default function CategorySection({ category, api }: CategorySectionProps)
 
   if (loading) {
     const loadingGridCols = home.posterAspectRatio === '16/9'
-      ? 'grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
-      : 'grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
+      ? 'grid-cols-1 gap-5 sm:gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+      : 'grid-cols-2 gap-5 sm:gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
     return (
       <div className={`grid ${loadingGridCols}`}>
         {[1, 2, 3, 4, 5, 6].map(i => (
@@ -286,7 +290,7 @@ export default function CategorySection({ category, api }: CategorySectionProps)
 
   return (
     <div className="space-y-4">
-      <div className={`grid gap-3 ${gridCols}`}>
+      <div className={`grid ${gridGap} ${gridCols}`}>
         {videos.map((video, index) => (
           <motion.div
             key={`${video.source_code}_${video.vod_id}`}

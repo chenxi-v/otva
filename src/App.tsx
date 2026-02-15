@@ -411,7 +411,7 @@ function App() {
           </Button>
         </div>
 
-        <div className="container mx-auto max-w-7xl px-4 pt-20">
+        <div className="container mx-auto max-w-7xl px-1 pt-20 sm:px-4">
           <motion.div
             layoutId="app-logo"
             transition={{ duration: 0.4 }}
@@ -632,7 +632,7 @@ function App() {
                 )}
 
                 {targetApi && (selectedSubCategory || selectedCategory) && (
-                  <div className="overflow-hidden rounded-2xl bg-white/40 p-4 shadow-xl shadow-black/5 backdrop-blur-xl md:p-6 dark:bg-white/10">
+                  <div className="overflow-hidden rounded-2xl bg-white/40 p-1 shadow-xl shadow-black/5 backdrop-blur-xl sm:p-4 md:p-6 dark:bg-white/10">
                     <div className="mb-4 flex items-center gap-3">
                       <div className="h-6 w-1 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
                       <h2 className="text-lg font-bold text-gray-900 dark:text-white">
