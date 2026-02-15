@@ -55,7 +55,7 @@
 
 **OuonnkiTV** 是一个现代化的视频聚合搜索与播放前端应用，基于 **React 19 + Vite 6 + TypeScript** 构建。
 
-本项目在 LibreSpark/LibreTV 的基础上进行了全面重构，采用现代化的技术栈和架构设计，并经过多轮 UI/UX 优化，包括：
+本项目在 OuonnkiTV 的基础上进行了多项修改：
 
 - 🎨 **视觉优化** - 自定义视频播放器主题（绿色进度条、隐藏通知栏）
 - 📱 **移动端适配** - 海报尺寸优化、布局居中、触摸友好的交互
@@ -93,8 +93,6 @@
 
 ### Vercel 部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Ouonnki/OuonnkiTV&build-command=pnpm%20build&install-command=pnpm%20install&output-directory=dist)
-
 **部署步骤：**
 1. Fork 本仓库到您的 GitHub 账户
 2. 登录 Vercel，点击 "New Project"
@@ -117,20 +115,7 @@
    - **Build command**: `pnpm run build`
    - **Build output directory**: `dist`
 6. 点击 **Save and Deploy**
-
-### Netlify 部署
-
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Ouonnki/OuonnkiTV)
-
-### Docker 部署
-
-#### 方式一：Docker Compose（推荐）
-
-```bash
-# 首次部署或修改配置后启动（重新构建）
-docker-compose up -d --build
-```
-
+7. 
 **环境变量配置**（可选）：
 
 1. 复制环境变量示例文件：
@@ -159,14 +144,6 @@ docker-compose up -d --build
    ```bash
    docker-compose up -d --build
    ```
-
-#### 方式二：预构建镜像（快速启动）
-
-```bash
-docker pull ghcr.io/ouonnki/ouonnkitv:latest
-docker run -d -p 3000:80 ghcr.io/ouonnki/ouonnkitv:latest
-```
-
 ### 本地运行
 
 **环境要求：**
@@ -398,18 +375,6 @@ pnpm lint         # ESLint 代码检查
 - `style:` 代码格式调整
 - `refactor:` 重构代码
 - `perf:` 性能优化
-
-## 📜 其他
-
-### 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-1. Fork 本仓库
-2. 创建特性分支：`git checkout -b feat/your-feature`
-3. 提交更改：`git commit -m "feat: add xxx"`
-4. 推送分支：`git push origin feat/your-feature`
-5. 提交 Pull Request
 
 ### 许可证
 
