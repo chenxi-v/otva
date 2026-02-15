@@ -250,7 +250,7 @@ export default function AboutProject() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <a
-          href="https://github.com/ouonnki/OuonnkiTV"
+          href="https://github.com/chenxi-v/OTVS"
           target="_blank"
           rel="noopener noreferrer"
           className="group block"
