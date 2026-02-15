@@ -21,6 +21,7 @@ interface SettingsConfig {
   home?: {
     defaultDataSourceId?: string
     posterAspectRatio?: '3/4' | '16/9'
+    blockedCategories?: number[]
   }
   theme?: {
     mode?: 'light' | 'dark' | 'system'

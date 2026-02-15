@@ -65,7 +65,6 @@ interface SettingActions {
   addBlockedCategory: (categoryId: number) => void
   removeBlockedCategory: (categoryId: number) => void
   toggleBlockedCategory: (categoryId: number) => void
-  isCategoryBlocked: (categoryId: number) => boolean
   clearBlockedCategories: () => void
 }
 
@@ -166,11 +165,6 @@ export const useSettingStore = create<SettingStore>()(
               state.home.blockedCategories.push(categoryId)
             }
           })
-        },
-
-        isCategoryBlocked: categoryId => {
-          const state = useSettingStore.getState()
-          return state.home.blockedCategories.includes(categoryId)
         },
 
         clearBlockedCategories: () => {
