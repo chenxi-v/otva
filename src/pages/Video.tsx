@@ -9,19 +9,16 @@ import Hls, {
   type HlsConfig,
   type LoaderConfiguration,
 } from 'hls.js'
-import { Button, Chip, Spinner, Tooltip, Select, SelectItem } from '@heroui/react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Card, CardBody, Button, Chip, Spinner, Tooltip, Select, SelectItem } from '@heroui/react'
 import type { DetailResponse } from '@/types'
 import { apiService } from '@/services/api.service'
 import { useApiStore } from '@/store/apiStore'
 import { useViewingHistoryStore } from '@/store/viewingHistoryStore'
 import { useSettingStore } from '@/store/settingStore'
-import { useDocumentTitle, useTheme } from '@/hooks'
-import { ArrowUpIcon, ArrowDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@/components/icons'
-import MobileNavBar from '@/components/MobileNavBar'
+import { useDocumentTitle } from '@/hooks'
+import { ArrowUpIcon, ArrowDownIcon } from '@/components/icons'
 import _ from 'lodash'
 import { toast } from 'sonner'
-import '@/styles/artplayer.css'
 
 // 过滤可疑的广告内容
 function filterAdsFromM3U8(m3u8Content: string) {
@@ -102,8 +99,6 @@ export default function Video() {
   const { videoAPIs, adFilteringEnabled } = useApiStore()
   const { addViewingHistory, viewingHistory } = useViewingHistoryStore()
   const { playback } = useSettingStore()
-  
-  useTheme()
 
   // Use refs to access latest values in main useEffect without triggering re-renders
   const viewingHistoryRef = useRef(viewingHistory)
@@ -125,8 +120,6 @@ export default function Video() {
   const [isReversed, setIsReversed] = useState(playback.defaultEpisodeOrder === 'desc')
   const [currentPageRange, setCurrentPageRange] = useState<string>('')
   const [episodesPerPage, setEpisodesPerPage] = useState(100)
-  const [isPlayerReady, setIsPlayerReady] = useState(false)
-  const [isEpisodePanelCollapsed, setIsEpisodePanelCollapsed] = useState(false)
 
   // 计算响应式的每页集数 (基于屏幕尺寸和列数)
   useEffect(() => {
@@ -237,11 +230,10 @@ export default function Video() {
       }
     }
 
-    // 创建新的播放器实例 - 简洁配置
+    // 创建新的播放器实例
     const art = new Artplayer({
       container: containerRef.current,
       url: detail.episodes[selectedEpisode],
-      poster: detail.videoInfo?.cover,
       volume: 0.7,
       isLive: false,
       muted: false,
@@ -252,13 +244,21 @@ export default function Video() {
       screenshot: true,
       setting: true,
       loop: false,
+      flip: true,
       playbackRate: true,
+      aspectRatio: true,
       fullscreen: true,
       fullscreenWeb: true,
-      theme: '#6366f1',
+      subtitleOffset: true,
+      miniProgressBar: true,
+      mutex: true,
+      backdrop: true,
+      playsInline: true,
+      autoOrientation: true,
+      // autoPlayback: true, // Removed to avoid duplicate resume logic with viewingHistoryStore
+      airplay: true,
+      theme: '#23ade5',
       lang: 'zh-cn',
-      lock: true,
-      fastForward: true,
       moreVideoAttr: {
         crossOrigin: 'anonymous',
       },
@@ -286,11 +286,8 @@ export default function Video() {
 
     playerRef.current = art
 
-    setIsPlayerReady(false)
-
     // 自动续播
     art.on('ready', () => {
-      setIsPlayerReady(true)
       const existingHistory = viewingHistoryRef.current.find(
         item =>
           item.sourceCode === sourceCode &&
@@ -480,7 +477,7 @@ export default function Video() {
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-500 dark:text-gray-400">正在加载视频信息...</p>
+          <p className="mt-4 text-gray-500">正在加载视频信息...</p>
         </div>
       </div>
     )
@@ -490,12 +487,14 @@ export default function Video() {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white/40 p-6 text-center shadow-xl backdrop-blur-xl dark:bg-white/10">
-          <p className="mb-4 text-red-500">{error}</p>
-          <Button className="w-full" onPress={() => navigate(-1)} variant="flat">
-            返回
-          </Button>
-        </div>
+        <Card className="w-full max-w-sm">
+          <CardBody className="text-center">
+            <p className="mb-4 text-red-500">{error}</p>
+            <Button className="w-full" onPress={() => navigate(-1)} variant="flat">
+              返回
+            </Button>
+          </CardBody>
+        </Card>
       </div>
     )
   }
@@ -504,228 +503,84 @@ export default function Video() {
   if (!detail || !detail.episodes || detail.episodes.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white/40 p-6 text-center shadow-xl backdrop-blur-xl dark:bg-white/10">
-          <p className="mb-4 text-gray-500 dark:text-gray-400">无法获取播放信息</p>
-          <Button className="w-full" onPress={() => navigate(-1)} variant="flat">
-            返回
-          </Button>
-        </div>
+        <Card className="w-full max-w-sm">
+          <CardBody className="text-center">
+            <p className="mb-4 text-gray-500">无法获取播放信息</p>
+            <Button className="w-full" onPress={() => navigate(-1)} variant="flat">
+              返回
+            </Button>
+          </CardBody>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto max-w-7xl p-2 pb-20 pt-20 sm:p-4 sm:pt-4">
-      <MobileNavBar showSettings={false} />
-
-      {/* 顶部信息栏 - 手机端两行布局 */}
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center justify-between sm:flex-1 sm:justify-start sm:gap-3">
-          <div className="flex flex-1 items-center gap-2 min-w-0">
-            <span className="shrink-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-0.5 text-xs font-medium text-white sm:px-3 sm:py-1">
-              {sourceName}
-            </span>
-            <h4 className="truncate text-base font-bold text-gray-900 dark:text-white sm:text-lg md:text-xl">{getTitle()}</h4>
+    <div className="container mx-auto max-w-6xl p-2 sm:p-4">
+      {/* 视频信息 - 移动端在播放器上方，桌面端浮层 */}
+      <div className="mb-4 flex flex-col gap-2 md:hidden">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-gray-600">{sourceName}</p>
+            <h4 className="text-lg font-bold">{getTitle()}</h4>
           </div>
-          <Button size="sm" variant="flat" onPress={() => navigate(-1)} className="shrink-0 bg-gray-100 dark:bg-gray-700 dark:text-gray-200 sm:hidden">
+          <Button size="sm" variant="flat" onPress={() => navigate(-1)}>
             返回
           </Button>
         </div>
-        <div className="flex items-center justify-between sm:gap-2">
-          <div className="hidden items-center gap-2 sm:flex">
-            <Chip
-              size="sm"
-              className="bg-gradient-to-r from-blue-500 to-purple-500 font-medium text-white"
-            >
-              第 {selectedEpisode + 1} 集
-            </Chip>
-            <span className="text-sm text-gray-500 dark:text-gray-400">共 {detail.episodes.length} 集</span>
-          </div>
-          <Button size="sm" variant="flat" onPress={() => navigate(-1)} className="hidden bg-gray-100 dark:bg-gray-700 dark:text-gray-200 sm:flex">
-            返回
-          </Button>
+        <div className="flex items-center gap-2">
+          <Chip size="sm" color="primary" variant="flat">
+            第 {selectedEpisode + 1} 集
+          </Chip>
+          <p className="text-sm text-gray-600">共 {detail.episodes.length} 集</p>
         </div>
       </div>
 
-      {/* 主内容区域 - 左右分栏布局 */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-        {/* 播放器区域 */}
-        <div
-          className={`relative rounded-2xl bg-black shadow-2xl shadow-black/20 transition-all duration-300 ${
-            isEpisodePanelCollapsed ? 'lg:col-span-4' : 'lg:col-span-3'
-          }`}
-        >
-          {/* 视频封面和加载状态 */}
-          <AnimatePresence>
-            {!isPlayerReady && (
-              <motion.div
-                initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="absolute inset-0 z-10 flex items-center justify-center overflow-hidden rounded-2xl bg-black"
-              >
-                {detail?.videoInfo?.cover ? (
-                  <>
-                    <img
-                      src={detail.videoInfo.cover}
-                      alt={getTitle()}
-                      className="absolute inset-0 h-full w-full object-cover opacity-30 blur-sm"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-                  </>
-                ) : null}
-                <div className="relative z-20 flex flex-col items-center gap-4">
-                  <Spinner size="lg" color="white" />
-                  <p className="text-sm text-white/70">正在加载播放器...</p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      {/* 播放器卡片 */}
+      <div className="mb-4 hidden items-center justify-between md:flex">
+        <div className="flex items-center gap-4">
+          <div>
+            <p className="text-sm font-semibold text-gray-500">{sourceName}</p>
+            <h4 className="text-xl font-bold">{getTitle()}</h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Chip size="sm" color="primary" variant="flat">
+              第 {selectedEpisode + 1} 集
+            </Chip>
+            <p className="text-sm text-gray-500">共 {detail.episodes.length} 集</p>
+          </div>
+        </div>
+        <Button size="sm" variant="flat" onPress={() => navigate(-1)}>
+          返回
+        </Button>
+      </div>
 
+      <Card className="mb-4 border-none sm:mb-6" radius="lg">
+        {/* Removed absolute header to fix display issues, moved info to top of card or separate div above */}
+        <CardBody className="p-0">
           <div
             id="player"
             ref={containerRef}
-            className="w-full overflow-hidden rounded-2xl bg-black"
-            style={{ aspectRatio: '16/9' }}
+            className="flex aspect-video w-full items-center rounded-lg bg-black"
           />
+        </CardBody>
+      </Card>
 
-          {/* 移动端当前集数显示 */}
-          <div className="absolute bottom-4 left-4 z-10 sm:hidden">
-            <Chip
-              size="sm"
-              className="bg-black/50 font-medium text-white backdrop-blur-sm"
-            >
-              第 {selectedEpisode + 1} 集 / 共 {detail.episodes.length} 集
-            </Chip>
-          </div>
-
-          {/* 折叠按钮 - 桌面端 */}
-          {detail.videoInfo?.episodes_names && detail.videoInfo?.episodes_names.length > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setIsEpisodePanelCollapsed(!isEpisodePanelCollapsed)}
-              className="absolute top-1/2 right-0 z-30 hidden h-10 w-10 -translate-y-1/2 translate-x-1/2 items-center justify-center rounded-full bg-white/80 shadow-lg backdrop-blur-sm transition-all hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-700 lg:flex"
-            >
-              {isEpisodePanelCollapsed ? (
-                <ChevronLeftIcon size={20} className="text-gray-700 dark:text-gray-200" />
-              ) : (
-                <ChevronRightIcon size={20} className="text-gray-700 dark:text-gray-200" />
-              )}
-            </motion.button>
-          )}
-        </div>
-
-        {/* 选集面板 - 桌面端右侧 */}
-        {detail.videoInfo?.episodes_names && detail.videoInfo?.episodes_names.length > 0 && !isEpisodePanelCollapsed && (
-          <div
-            className="hidden overflow-hidden rounded-2xl bg-white/40 shadow-xl shadow-black/5 backdrop-blur-xl transition-all duration-300 lg:block lg:col-span-1 dark:bg-white/10"
-            style={{ maxHeight: 'fit-content' }}
-          >
-            <div className="flex flex-col" style={{ maxHeight: 'min(500px, 80vh)' }}>
-              {/* 选集标题 */}
-              <div className="border-b border-gray-200/50 p-4 dark:border-gray-700/50">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-1 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
-                  <div>
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">选集</h2>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">共 {detail.episodes.length} 集</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 排序和分页控制 */}
-              <div className="flex items-center gap-2 border-b border-gray-200/50 p-3 dark:border-gray-700/50">
-                <Button
-                  size="sm"
-                  variant="flat"
-                  onPress={() => setIsReversed(!isReversed)}
-                  startContent={
-                    isReversed ? <ArrowUpIcon size={14} /> : <ArrowDownIcon size={14} />
-                  }
-                  className="flex-1 bg-gray-100 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-                >
-                  {isReversed ? '正序' : '倒序'}
-                </Button>
-                {pageRanges.length > 1 && (
-                  <Select
-                    size="sm"
-                    selectedKeys={[currentPageRange]}
-                    onChange={e => setCurrentPageRange(e.target.value)}
-                    className="w-24"
-                    classNames={{
-                      trigger: 'bg-gray-100 border-none text-xs font-medium dark:bg-gray-700',
-                      value: 'text-gray-700 text-xs dark:text-gray-200',
-                      popoverContent: 'bg-white/90 backdrop-blur-xl border border-gray-200/50 dark:bg-gray-800/90',
-                    }}
-                    aria-label="选择集数范围"
-                  >
-                    {pageRanges.map(range => (
-                      <SelectItem key={range.value} className="text-xs">
-                        {range.label}
-                      </SelectItem>
-                    ))}
-                  </Select>
-                )}
-              </div>
-
-              {/* 选集网格 */}
-              <div className="flex-1 overflow-y-auto p-3">
-                <div className="grid grid-cols-3 gap-2">
-                  {currentPageEpisodes.map(({ name, displayIndex, actualIndex }) => {
-                    const isSelected = selectedEpisode === actualIndex
-                    return (
-                      <Tooltip
-                        key={`${name}-${displayIndex}`}
-                        content={name}
-                        placement="top"
-                        delay={1000}
-                      >
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => handleEpisodeChange(displayIndex)}
-                          className={`relative overflow-hidden rounded-lg px-2 py-1.5 text-xs font-medium transition-all duration-300 ${
-                            isSelected
-                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                          }`}
-                        >
-                          <span className="relative z-10 block overflow-hidden text-ellipsis whitespace-nowrap">
-                            {name}
-                          </span>
-                        </motion.button>
-                      </Tooltip>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 选集面板 - 移动端底部 */}
+      {/* 选集列表 */}
       {detail.videoInfo?.episodes_names && detail.videoInfo?.episodes_names.length > 0 && (
-        <div className="mt-4 overflow-hidden rounded-2xl bg-white/40 shadow-xl shadow-black/5 backdrop-blur-xl lg:hidden dark:bg-white/10">
-          <div className="border-b border-gray-200/50 p-4 dark:border-gray-700/50">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-8 w-1 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">选集</h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">共 {detail.episodes.length} 集</p>
-                </div>
-              </div>
+        <div className="mt-4 flex flex-col">
+          <div className="flex flex-col gap-2 p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-gray-900">选集</h2>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
-                  variant="flat"
+                  variant="light"
                   onPress={() => setIsReversed(!isReversed)}
                   startContent={
-                    isReversed ? <ArrowUpIcon size={16} /> : <ArrowDownIcon size={16} />
+                    isReversed ? <ArrowUpIcon size={18} /> : <ArrowDownIcon size={18} />
                   }
-                  className="bg-gray-100 font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                  className="min-w-unit-16 text-sm text-gray-600"
                 >
                   {isReversed ? '正序' : '倒序'}
                 </Button>
@@ -734,11 +589,11 @@ export default function Video() {
                     size="sm"
                     selectedKeys={[currentPageRange]}
                     onChange={e => setCurrentPageRange(e.target.value)}
-                    className="w-28"
+                    className="w-32"
                     classNames={{
-                      trigger: 'bg-gray-100 border-none font-medium dark:bg-gray-700',
-                      value: 'text-gray-700 dark:text-gray-200',
-                      popoverContent: 'bg-white/90 backdrop-blur-xl border border-gray-200/50 dark:bg-gray-800/90',
+                      trigger: 'bg-white/30 backdrop-blur-md border border-gray-200',
+                      value: 'text-gray-800 font-medium',
+                      popoverContent: 'bg-white/40 backdrop-blur-2xl border border-gray-200/50',
                     }}
                     aria-label="选择集数范围"
                   >
@@ -750,9 +605,8 @@ export default function Video() {
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 p-3 sm:grid-cols-4 md:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 rounded-lg bg-white/30 p-4 pt-0 shadow-lg/5 backdrop-blur-md sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-8">
             {currentPageEpisodes.map(({ name, displayIndex, actualIndex }) => {
-              const isSelected = selectedEpisode === actualIndex
               return (
                 <Tooltip
                   key={`${name}-${displayIndex}`}
@@ -760,20 +614,19 @@ export default function Video() {
                   placement="top"
                   delay={1000}
                 >
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleEpisodeChange(displayIndex)}
-                    className={`relative overflow-hidden rounded-xl px-2 py-2 text-xs font-medium transition-all duration-300 sm:text-sm ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                    }`}
+                  <Button
+                    size="md"
+                    color="default"
+                    variant="shadow"
+                    className={
+                      selectedEpisode === actualIndex
+                        ? 'border border-gray-200 bg-gray-900 text-white drop-shadow-2xl'
+                        : 'border border-gray-200 bg-white/30 text-gray-800 drop-shadow-2xl backdrop-blur-md transition-all duration-300 hover:scale-105 hover:bg-black/80 hover:text-white'
+                    }
+                    onPress={() => handleEpisodeChange(displayIndex)}
                   >
-                    <span className="relative z-10 block overflow-hidden text-ellipsis whitespace-nowrap">
-                      {name}
-                    </span>
-                  </motion.button>
+                    <span className="overflow-hidden text-ellipsis whitespace-nowrap">{name}</span>
+                  </Button>
                 </Tooltip>
               )
             })}
