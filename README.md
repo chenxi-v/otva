@@ -4,7 +4,7 @@
 </h1>
 
 <p align="center">
-  基于OuonnkiTV修改，添加数据库支持，API数据显示（类似lunaTV的源浏览器但是支持自动识别分类和子分类）。
+  基于原版OuonnkiTV修改，添加数据库支持，API数据显示（类似lunaTV的源浏览器但是支持自动识别分类和子分类）。
 </p>
 
 <p align="center">
