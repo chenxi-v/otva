@@ -149,18 +149,32 @@ function App() {
     }
   }, [videoAPIs, home?.defaultDataSourceId])
 
-  const getCategoryParent = (typeId: number): number => {
-    if (typeId >= 6 && typeId <= 12) return 1
-    if (typeId === 39 || typeId === 62 || typeId === 70) return 1
-    if (typeId >= 13 && typeId <= 19) return 2
-    if (typeId === 23) return 2
-    if (typeId >= 54 && typeId <= 61) return 2
-    if (typeId >= 64 && typeId <= 69) return 2
-    if (typeId >= 25 && typeId <= 28) return 3
-    if (typeId >= 29 && typeId <= 31) return 4
-    if (typeId === 44 || typeId === 45 || typeId === 63) return 4
-    if (typeId >= 47 && typeId <= 53) return 20
-    return 0
+  // 根据分类名称智能识别父分类
+  const getCategoryParentByName = (categoryName: string, mainCategories: Category[]): number => {
+    const name = categoryName.toLowerCase()
+
+    // 定义子分类到主分类的映射规则
+    const mappingRules = [
+      // 电影类子分类
+      { keywords: ['动作', '喜剧', '爱情', '科幻', '恐怖', '剧情', '战争', '纪录', '记录', '动画', '伦理', '理论', '邵氏'], parent: '电影' },
+      // 剧集类子分类
+      { keywords: ['国产', '香港', '港台', '台湾', '日本', '韩国', '欧美', '海外', '泰国', '短剧'], parent: '连续剧' },
+      // 综艺类子分类
+      { keywords: ['大陆综艺', '港台综艺', '日韩综艺', '欧美综艺', '娱乐', '八卦', '资讯'], parent: '综艺' },
+      // 动漫类子分类
+      { keywords: ['国产动漫', '日韩动漫', '欧美动漫', '港台动漫', '海外动漫', '动漫电影'], parent: '动漫' },
+    ]
+
+    // 查找匹配的父分类
+    for (const rule of mappingRules) {
+      if (rule.keywords.some(kw => name.includes(kw.toLowerCase()))) {
+        const parent = mainCategories.find(m => m.type_name?.includes(rule.parent))
+        if (parent) return parent.type_id
+      }
+    }
+
+    // 默认返回第一个主分类
+    return mainCategories[0]?.type_id || 0
   }
 
   const fetchCategories = async () => {
@@ -307,7 +321,7 @@ function App() {
                 // 为所有分类分配 type_pid
                 const allCategoriesWithPid = filteredClass.map((cat: Category) => ({
                   ...cat,
-                  type_pid: mainCategoryIds.includes(cat.type_id) ? 0 : getCategoryParent(cat.type_id),
+                  type_pid: mainCategoryIds.includes(cat.type_id) ? 0 : getCategoryParentByName(cat.type_name, mainCategories),
                 }))
 
                 setAllCategories(allCategoriesWithPid)
