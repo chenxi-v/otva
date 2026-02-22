@@ -153,23 +153,26 @@ function App() {
   const getCategoryParentByName = (categoryName: string, mainCategories: Category[]): number => {
     const name = categoryName.toLowerCase()
 
-    // 定义子分类到主分类的映射规则
+    // 定义子分类到主分类的映射规则（支持多个父分类名称匹配）
     const mappingRules = [
       // 电影类子分类
-      { keywords: ['动作', '喜剧', '爱情', '科幻', '恐怖', '剧情', '战争', '纪录', '记录', '动画', '伦理', '理论', '邵氏'], parent: '电影' },
-      // 剧集类子分类
-      { keywords: ['国产', '香港', '港台', '台湾', '日本', '韩国', '欧美', '海外', '泰国', '短剧'], parent: '连续剧' },
+      { keywords: ['动作', '喜剧', '爱情', '科幻', '恐怖', '剧情', '战争', '纪录', '记录', '动画', '伦理', '理论', '邵氏'], parentNames: ['电影'] },
+      // 剧集类子分类（支持"连续剧"和"电视剧"两种名称）
+      { keywords: ['国产', '香港', '港台', '台湾', '日本', '韩国', '欧美', '海外', '泰国', '短剧'], parentNames: ['连续剧', '电视剧'] },
       // 综艺类子分类
-      { keywords: ['大陆综艺', '港台综艺', '日韩综艺', '欧美综艺', '娱乐', '八卦', '资讯'], parent: '综艺' },
+      { keywords: ['大陆综艺', '港台综艺', '日韩综艺', '欧美综艺', '娱乐', '八卦', '资讯'], parentNames: ['综艺'] },
       // 动漫类子分类
-      { keywords: ['国产动漫', '日韩动漫', '欧美动漫', '港台动漫', '海外动漫', '动漫电影'], parent: '动漫' },
+      { keywords: ['国产动漫', '日韩动漫', '欧美动漫', '港台动漫', '海外动漫', '动漫电影'], parentNames: ['动漫'] },
     ]
 
     // 查找匹配的父分类
     for (const rule of mappingRules) {
       if (rule.keywords.some(kw => name.includes(kw.toLowerCase()))) {
-        const parent = mainCategories.find(m => m.type_name?.includes(rule.parent))
-        if (parent) return parent.type_id
+        // 尝试匹配任意一个父分类名称
+        for (const parentName of rule.parentNames) {
+          const parent = mainCategories.find(m => m.type_name?.includes(parentName))
+          if (parent) return parent.type_id
+        }
       }
     }
 
@@ -304,12 +307,22 @@ function App() {
                 const filteredClass = data.class.filter((cat: Category) => !blockedCategories.includes(cat.type_id))
 
                 // 智能识别主分类：
-                // 1. 优先使用常见的分类名称匹配
-                // 2. 如果没有匹配，使用 ID 1-4 作为默认主分类
-                const mainCategoryKeywords = ['电影', '剧集', '电视剧', '综艺', '动漫', '动画', '纪录', '纪录片', '短剧']
-                const detectedMainCategories = filteredClass.filter((cat: Category) =>
-                  mainCategoryKeywords.some(keyword => cat.type_name?.includes(keyword))
-                )
+                // 1. 精确匹配主分类名称
+                // 2. 排除明确的子分类（以"片"结尾、包含特定子分类关键词）
+                const exactMainCategoryNames = ['电影', '连续剧', '电视剧', '综艺', '动漫', '纪录片', '短剧']
+                const subCategorySuffixes = ['片']
+                const subCategoryKeywords = ['解说', '新闻', '动态', '爆料', '资讯', '综艺', '动漫']
+
+                const detectedMainCategories = filteredClass.filter((cat: Category) => {
+                  const name = cat.type_name?.trim()
+                  // 精确匹配主分类名称
+                  if (exactMainCategoryNames.includes(name)) return true
+                  // 排除以"片"结尾的分类（如动作片、喜剧片）
+                  if (subCategorySuffixes.some(suffix => name?.endsWith(suffix))) return false
+                  // 排除包含子分类关键词的分类（如电影解说、娱乐动态）
+                  if (subCategoryKeywords.some(kw => name?.includes(kw))) return false
+                  return false
+                })
 
                 // 如果检测到主分类，使用检测到的；否则使用 ID 1-4 的分类
                 const mainCategories = detectedMainCategories.length > 0
